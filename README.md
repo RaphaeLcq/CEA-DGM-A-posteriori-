@@ -5,7 +5,7 @@ This project implements an **a posteriori error estimator** for **Discontinuous 
 
 The work is based on the estimator proposed by Ainsworth (2007), extended to handle **heterogeneous diffusion problems**, and validated through numerical experiments.
 
-This is a research prototype.
+This is a research prototype implemented with Octave GNU.
 
 The PDF report sums up the theory used and the numerical results.
 ---
