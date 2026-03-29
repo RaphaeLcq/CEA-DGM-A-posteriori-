@@ -5,6 +5,9 @@ This project implements an **a posteriori error estimator** for **Discontinuous 
 
 The work is based on the estimator proposed by Ainsworth (2007), extended to handle **heterogeneous diffusion problems**, and validated through numerical experiments.
 
+This is a research prototype.
+
+The PDF report sums up the theory used and the numerical results.
 ---
 
 ## Motivation
@@ -18,7 +21,7 @@ In practice:
 **A posteriori error estimation** addresses this by:
 - estimating the error from the computed solution itself
 - identifying regions where the solution is inaccurate
-- guiding **local mesh refinement** :contentReference[oaicite:0]{index=0}
+- guiding **local mesh refinement**
 
 ---
 
@@ -47,7 +50,7 @@ An estimator eta_h is constructed such that:
   - the computed solution
   - the mesh
   - the problem data
-- it is **equivalent to the true error asymptotically** :contentReference[oaicite:1]{index=1}  
+- it is **equivalent to the true error asymptotically** 
 
 This ensures:
 - reliability: eta_h ≥ error_h  
@@ -64,7 +67,7 @@ The error is split into two components:
 
 This reflects the DG structure:
 - discontinuities across elements introduce a non-conforming contribution  
-- approximation inside elements contributes to conforming error :contentReference[oaicite:2]{index=2}  
+- approximation inside elements contributes to conforming error
 
 ---
 
@@ -81,7 +84,7 @@ Goal:
 
 This leads to:
 - improved accuracy for fixed computational cost  
-- better handling of singularities and irregular solutions :contentReference[oaicite:3]{index=3}  
+- better handling of singularities and irregular solutions
 
 ---
 
@@ -98,7 +101,7 @@ For smooth problems:
 
 For singular problems (e.g. L-shaped domain):
 - **significant gain in convergence rate**  
-- local refinement captures singularities effectively :contentReference[oaicite:4]{index=4}  
+- local refinement captures singularities effectively 
 
 ---
 
@@ -115,7 +118,7 @@ For singular problems (e.g. L-shaped domain):
 - Prototype developed in:
   - MATLAB, Octave
 
-- Designed for future integration into **TrioCFD (CEA)** :contentReference[oaicite:5]{index=5}  
+- Designed for future integration into **TrioCFD (CEA)** :
 
 ---
 
@@ -143,13 +146,26 @@ For singular problems (e.g. L-shaped domain):
 
 ---
 
-## How to Use
+## How to Use a ready to run problem
 
-1. Solve a DG problem
-2. Compute the a posteriori estimator
-3. Generate local error map
-4. Refine mesh based on ηₜ
-5. Repeat
+0. Create a .msh file using the .geo files already created.
+Use GMESH export : Version 2, ASCII, checking "Save all elements" only. 
+The name of the geo file is : "ProblemName.geo".
+The .msh files should be named : ProblemName_h{X}.msh, where X = 1, ..., 5. X = 1 being the first non refined file, X > 1 are a sequence refined meshes.
+Note the program expects that the greater X is, the more the mesh is refined.
+
+1. Open mainPoissonDG.m.
+
+2. Select the problem you want to run.
+
+3. Choose what vizualisation you want the the "GLOBAL visu".
+
+4. Choose the number of simulations you want to run. 
+The simulations will run for X = m0 to X = m1 if m0 > m1.
+
+5. Refine mesh based on eta_T.
+
+5. Repeat.
 
 ---
 
@@ -165,7 +181,7 @@ For singular problems (e.g. L-shaped domain):
 Raphaël Lecoq
 Erell Jamelot
 Andrew Peitavy
-Melissa Mroueh
+Thanks to Melissa Mroueh for her help and some parts of the script.
 
 ---
 
@@ -178,14 +194,13 @@ Not production-ready.
 
 # Copyright 
 
-* Copyright (c), CEA
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-* 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-* 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
-* 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-* IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
-* OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+Copyright (c), CEA
+All rights reserved.
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
