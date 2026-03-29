@@ -19,29 +19,41 @@
 % Author :  CEA
 %
 %
-%
 % SYNOPSIS [Phiexh,NormPhiex2h,NormGPhiex2h]=SolutionStokesSinusDG(Mu,invMu,Ku,idof)
+% Construct the Right hand side of the Discontinuous Galerkin method.
 %
-% GLOBAL - CoorNeu(Nbpt,2) : coordonnees (x, y) des sommets (noeuds P1)
-%        - CoorBary(Nbtri,2)   : Coordonnees des barycentres de triangles
-%        - invDiaTri(Nbtri,2)   : inverse des diametres des triangles
-%        - NumTri(Nbtri,3) : liste de triangles 
-%                   (3 numeros de sommets) 
-%		     - TriEdg(Nbtri,3) : Pour chaque triangle, TriEdg(l,i) est le numero de l'arete opposee au sommet NumTri(l,i)
-%                  (3 numeros des aretes - matrice entiere Nbtri x 3)
-%        - Aires(Nbtri,1) : aires des triangles
-%        - ordre  : ordre d'approximation
-%
-% INPUT  - Mu   : matrice de masse
-%        - invMu: inverse de la matrice de masse
-%        - Ku   : matrice de raideur
-%        - idof : indices des dof (degrees of freedom)
-% OUTPUT - [Phiexh,NormPhiex2h,NormGPhiex2h,RHS_Sinus] : la solution exacte projetee sur les polynomes, les normes discretes et le second membre
-%
+% GLOBAL
+%        - CoorNeu(Nbpt,2)    : coordinates (x, y) of vertices (nodes P1)
+%        - Nbtri              : global number of triangles
+%        - NumTri(Nbtri,3)    : list of triangles  (3 vertices number)
+%        - CoorBary(Nbtri,2)  : coordinates of barycentres of triangles
+%        - invDiaTri(Nbtri,2) : inverse of diametres of triangles
+%        - Aires(Nbtri,1)     : area of triangles
+%		     - TriEdg(Nbtri,3)    : for each triangle, TriEdg(l,i) is the number of vertice opposite from vertice NumTri(l,i)
+%                              (3 number of edges - full matrix Nbtri x 3)
+%		     - RefEdg(Nbedg,1)    : reference of each vertice
+%        - NumEdg(NbEdg,2)    : number of 2 nodes of each vertice
+%        - LgEdg(Nbedg,1)     : length of edges
+%        - etaEdg(NbEdg,1)    : value of eta on each edge
+%		     - EdgTri(Nbedg,2)    : for each vertice, EdgTri(a,:) gives the number of the 2 triangles sharing vertice
+%                                 EdgTri(a,2) = 0 if a is on the domain border
+%        - EdgNorm(Nbedg,2)   : vector normal-edge, oriented tri1->tri2
+%        - EdgUnit(Nbedg,2)   : unitary vector normal-edge, oriented tri1->tri2
+%        - invLgEdg(Nbedg,1)  : inverse of the edge length
+%        - kappa(Nbtri,1)     : diffusion in the triangle
+% INPUT  - Mu   : mass matrix
+%        - invMu: inverse of mass matrix
+%        - Ku   : stiffness matrix
+%        - idof : indices of dofs (degrees of freedom)
+% OUTPUT
+%        - Phiexh :exact solution projected on polynomials
+%        - NormPhiex2h : discrete norm L2
+%        - NormGPhiex2h : broken gradient discrete norm
+%        - RHS : Right hand side of the system
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [Phiexh,NormPhiex2h,NormGPhiex2h,RHS]=SolutionPoissonDG(Mu,invMu,Ku,idof)
-global CoorNeu npi npi2 ordre
+global CoorNeu  ordre
 global Nbtri NumTri CoorBary invDiaTri Aires TriEdg RefEdg
 global NumEdg LgEdg etaEdg  EdgTri EdgNorm EdgUnit invLgEdg
 global kappa
@@ -53,7 +65,7 @@ RHS=zeros(ndof,1); Phiexh=zeros(ndof,1);
 for t=1:Nbtri
   IGLO=NumTri(t,:); CoorNeuT=CoorNeu(IGLO,:);
   deb=idof(t,1); fin=idof(t,2); ndofT=idof(t,3);
-  %   
+  %
   % volume of the element
   aire=Aires(t);
   % Integration points
@@ -74,7 +86,7 @@ end
 %%%%%%%%%%%%%% Bord dirichlet
 
 %
-EdgDiri=find(RefEdg>=1 & RefEdg <= 9)' ; %% Set of Dirichlet edges, Ref >= 10 are Neumann 
+EdgDiri=find(RefEdg>=1 & RefEdg <= 9)' ; %% Set of Dirichlet edges, Ref >= 10 are Neumann
 EdgUnit=EdgNorm.*invLgEdg;
 
 for edge=EdgDiri
@@ -92,9 +104,9 @@ for edge=EdgDiri
 
   % evaluation des données du bord aux points de quadrature
   PhiDirichlet =  eval_donneesDirichlet(xyp(:,1), xyp(:,2));
-  phi_times_data = Phi_on_quad' .* PhiDirichlet;  
+  phi_times_data = Phi_on_quad' .* PhiDirichlet;
   phi_times_data =  phi_times_data;
-  RHS(debT:finT) += etaEdg(edge)*etaKappa(edge) / LgEdg(edge) .* sum(awp .* phi_times_data)'; 
+  RHS(debT:finT) += etaEdg(edge)*etaKappa(edge) / LgEdg(edge) .* sum(awp .* phi_times_data)';
 
   % Gradients des fonctions de base au bord (évalués sur les pts de quadrature)
   grad_phi_dot_n = zeros(size(grad_phi,1), np);  % [ndof x nbr quadra]
@@ -106,7 +118,7 @@ for edge=EdgDiri
   % Terme d’intégrale \int g kappa * grad phi_i \cdot n
   grad_phi_times_data = etaKappa(edge) * grad_phi_dot_n' .* PhiDirichlet; % taille [ndof x np]
   RHS(debT:finT,1) -= sum( awp.*grad_phi_times_data)';
-endfor 
+endfor
 
 
 %%%%%%%%%%%%%% Bord Neumann
@@ -140,7 +152,7 @@ endfor
 for tri = 1:Nbtri
   IGLO=NumTri(tri,:); CoorNeuT=CoorNeu(IGLO,:);
   deb=idof(tri,1); fin=idof(tri,2); ndofT=idof(tri,3);
-  %   
+  %
   % volume of the element
   aire=Aires(tri);
   % Integration points

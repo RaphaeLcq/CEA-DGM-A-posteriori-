@@ -19,32 +19,32 @@
 % Author : Erell Jamelot CEA
 %
 % SolutionPoissonSinusLG.m:
-% Solution du probleme de Poisson "Sinus"
+% Solve sinus problem with Lagrange basis :
 %
-%   Pb de Poisson dans un carre [0,1]*[0,1] :
+%   Poisson problem in a square [0,1]*[0,1] :
 %   -Delta Phi =(2*npi^2)*sin(npi*x)*sin(npi*y)
 %   Solution Phi(x,y)=sin(npi*x)*sin(npi*y)
 %
 %
 % SYNOPSIS [Phiex]=SolutionPoissonSinusLG
 %
-% GLOBAL - CoorNeu(Nbpt,2) : coordonnees (x, y) des sommets (noeuds P1)
-%        - CoorBary(Nbtri,2)   : Coordonnees des barycentres de triangles
-%        - invDiaTri(Nbtri,2)   : inverse des diametres des triangles
-%        - NumTri(Nbtri,3) : liste de triangles 
-%                   (3 numeros de sommets) 
-%		     - TriEdg(Nbtri,3) : Pour chaque triangle, TriEdg(l,i) est le numero de l'arete opposee au sommet NumTri(l,i)
-%                  (3 numeros des aretes - matrice entiere Nbtri x 3)
-%        - Aires(Nbtri,1) : aires des triangles
-% INPUT  - ordre  : ordre d'approximation
-%        - MLG : matrice de masse
-% OUTPUT - [PhiexLG] : la solution exacte au points de discretisation
+% GLOBAL -
+%        - CoorNeu(Nbpt,2) : coordinates (x, y) of vertices (nodes P1)
+%        - CoorBary(Nbtri,2)   : coordinates of barycentres of triangles
+%        - invDiaTri(Nbtri,2)   : inverse of diametres of triangles
+%        - NumTri(Nbtri,3) : list of triangles  (3 vertices number)
+%		     - TriEdg(Nbtri,3) : for each triangle, TriEdg(l,i) is the number of vertice opposite from vertice NumTri(l,i)
+%                  (3 number of edges - full matrix Nbtri x 3)
+%        - Aires(Nbtri,1) : area of triangles
+% INPUT  - ordre  : order of pproximation
+%        - MLG : mass matrix
+% OUTPUT - [PhiexLG] : exact solution on discretization points
 %
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [PhiexLG]=SolutionPoissonSinusLG(ordre, MLG)
 %
-global Nbpt CoorNeu 
+global Nbpt CoorNeu
 global Nbtri NumTri Aires TriEdg
 global Nbedg
 global npi
@@ -56,7 +56,7 @@ end
 RHS=zeros(Ndof,1); Phiex=zeros(Ndof,1);
 for t=1:Nbtri
   IGLO=NumTri(t,:); CoorNeuT=CoorNeu(IGLO,:);
-  %   
+  %
   % volume of the element
   aire=Aires(t);
   % Integration points
@@ -67,12 +67,12 @@ for t=1:Nbtri
   if (ordre==1)
     psiLG=lambda;  UGLO=IGLO;
   else
-    AGLO=TriEdg(t,:); 
+    AGLO=TriEdg(t,:);
     JLOC=[2,3,1]; KLOC=[3,1,2];
     lambda2=lambda.*lambda;
     psiS=2*lambda2-lambda;
     psiM=4*lambda(:,JLOC).*lambda(:,KLOC);
-    psiLG=[psiS,psiM]; UGLO=[IGLO,AGLO+Nbpt]; 
+    psiLG=[psiS,psiM]; UGLO=[IGLO,AGLO+Nbpt];
   end
   %
   RHS(UGLO,1)+=sum(PhiexT.*psiLG,1)';

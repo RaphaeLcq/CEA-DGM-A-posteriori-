@@ -18,18 +18,19 @@
 %
 % Author : Erell Jamelot CEA
 %
-% GCPDG.m:
+ % GCPDG.m:
 %
-% Algorithme de resolution du systeme mixte 
+% Algorithm for solving the mixed system
 % A U=F
 %
 % SYNOPSIS Uh=GCPDG(Ku,RHS_U)
-%          
-% Uzawa : on resout A U=F par un GCP par blocs
 %
-% INPUT : - Ku(ndofU,ndofU)  : matrice de raideur interne (une composante)
-%         - RHS_U(ndofU,1)     : second membre 
+% Uzawa: solve A U=F using a block conjugate gradient method
+%
+% INPUT : - Ku(ndofU,ndofU)  : internal stiffness matrix (one component)
+%         - RHS_U(ndofU,1)     : right-hand side
 % OUTPUT: - Uh(ndofU,1) : solution
+
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [Uh,res,nit]=GCPDG(invKu,Ku,RHS_U)

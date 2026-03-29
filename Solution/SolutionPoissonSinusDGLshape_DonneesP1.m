@@ -16,33 +16,42 @@
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% Author : Raphael ecoq CEA
+% Author : Raphael Lecoq CEA
 %
-% RHS de DGM avec projection des données de Dirichlet dans les fonctions constantes par morceaux sur le bord
-%
+% RHS of the DGM with the projection of the Dirichlet data on the piecewise constant functions
 %
 % SYNOPSIS [Phiexh,NormPhiex2h,NormGPhiex2h]=SolutionStokesSinusDG(Mu,invMu,Ku,idof)
 %
-% GLOBAL - CoorNeu(Nbpt,2) : coordonnees (x, y) des sommets (noeuds P1)
-%        - CoorBary(Nbtri,2)   : Coordonnees des barycentres de triangles
-%        - invDiaTri(Nbtri,2)   : inverse des diametres des triangles
-%        - NumTri(Nbtri,3) : liste de triangles 
-%                   (3 numeros de sommets) 
-%		     - TriEdg(Nbtri,3) : Pour chaque triangle, TriEdg(l,i) est le numero de l'arete opposee au sommet NumTri(l,i)
-%                  (3 numeros des aretes - matrice entiere Nbtri x 3)
-%        - Aires(Nbtri,1) : aires des triangles
-%        - ordre  : ordre d'approximation
-%
-% INPUT  - Mu   : matrice de masse
-%        - invMu: inverse de la matrice de masse
-%        - Ku   : matrice de raideur
-%        - idof : indices des dof (degrees of freedom)
-% OUTPUT - [Phiexh,NormPhiex2h,NormGPhiex2h,] : la solution exacte projetee sur les polynomes, les normes discretes et le second membre
-%
-%
+% GLOBAL - DEBUG : whether to run debug test or not
+%        - Nbtri              : global number of triangles
+%        - NumTri(Nbtri,3)    : list of triangles  (3 vertices number)
+%        - CoorBary(Nbtri,2)  : coordinates of barycentres of triangles
+%        - invDiaTri(Nbtri,2) : inverse of diametres of triangles
+%        - Aires(Nbtri,1)     : area of triangles
+%		     - TriEdg(Nbtri,3)    : for each triangle, TriEdg(l,i) is the number of vertice opposite from vertice NumTri(l,i)
+%                              (3 number of edges - full matrix Nbtri x 3)
+%		     - RefEdg(Nbedg,1)    : reference of each vertice
+%        - NumEdg(NbEdg,2)    : number of 2 nodes of each vertice
+%        - LgEdg(Nbedg,1)     : length of edges
+%        - etaEdg(NbEdg,1)    : value of eta on each edge
+%		     - EdgTri(Nbedg,2)    : for each vertice, EdgTri(a,:) gives the number of the 2 triangles sharing vertice
+%                                 EdgTri(a,2) = 0 if a is on the domain border
+%        - EdgNorm(Nbedg,2)   : vector normal-edge, oriented tri1->tri2
+%        - EdgUnit(Nbedg,2)   : unitary vector normal-edge, oriented tri1->tri2
+%        - invLgEdg(Nbedg,1)  : inverse of the edge length
+% INPUT  - Mu   : mass matrix
+%        - invMu: inverse of mass matrix
+%        - Ku   : stiffness matrix
+%        - idof : indices of dofs (degrees of freedom)
+% OUTPUT
+%        - Phiexh :exact solution projected on polynomials
+%        - NormPhiex2h : discrete norm L2
+%        - NormGPhiex2h : broken gradient discrete norm
+%        - RHS : right hand side
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [Phiexh,NormPhiex2h,NormGPhiex2h,RHS]=SolutionPoissonSinusDGLshape_DonneesP1(Mu,invMu,Ku,idof)
-  
+
 global DEBUG;
 
 global Nbtri NumTri CoorBary invDiaTri Aires TriEdg RefEdg NumEdg LgEdg etaEdg  EdgTri EdgNorm EdgUnit invLgEdg
@@ -58,7 +67,7 @@ EdgUnit=EdgNorm.*invLgEdg;
 for t=1:Nbtri
   IGLO=NumTri(t,:); CoorNeuT=CoorNeu(IGLO,:);
   deb=idof(t,1); fin=idof(t,2); ndofT=idof(t,3);
-  %   
+  %
   % volume of the element
   aire=Aires(t);
   % Integration points
@@ -78,7 +87,7 @@ end
 
 
 for edge=EdgDiri
-  
+
   IndVertices = NumEdg(edge,:);% Indices des deux extrémités de l'arête
   XY = CoorNeu(IndVertices,:); % 2x2 coordonnées des sommets
   %Evaluation des points de quadrature sur F
@@ -87,28 +96,28 @@ for edge=EdgDiri
   tri = EdgTri(edge,1); %%1er triangle car le 2eme triangle = 0 sur le bord
   debT = idof(tri,1);
   finT = idof(tri,2);
-  
+
   % Evaluation des fonctions de bases aux points de quadrature
   Phi_on_quad = eval_fct_base(xyp, tri, CoorBary(tri,:), invDiaTri(tri)); % taille : [ndof x nbr quadra]
   grad_phi = eval_grad_fct_base(xyp, tri, CoorBary(tri,:), invDiaTri(tri)); % taille : [ndof x 2 x nbr quadra]
-  
+
   % Calcul des valeurs de Dirichlet aux points de quadrature
   % DonneeDiri_P1 contient les coefficients P1 aux sommets globaux
   % Il faut récupérer les coefficients aux deux sommets de l'arête
   i = NumEdg(edge,1);  % Premier sommet global de l'arête
   j = NumEdg(edge,2);  % Deuxième sommet global de l'arête
-  
+
   % Evaluation de g_D aux points de quadrature
   PhiDirichlet = zeros(np, 1);
   for k = 1:np
     PhiDirichlet(k) = DonneeDiri_P1(i) * lambda(k,1) + DonneeDiri_P1(j) * lambda(k,2);
   end
-  
+
   % Premier terme : \int phi_i * g
   phi_times_data = Phi_on_quad' .* PhiDirichlet;  % taille [np x ndof]
   weighted_phi_times_data = awp .* phi_times_data; % awp est le vecteur des poids
-  RHS(debT:finT) += etaKappa(edge) * etaEdg(edge) ./ LgEdg(edge) .* sum(weighted_phi_times_data)'; 
-  
+  RHS(debT:finT) += etaKappa(edge) * etaEdg(edge) ./ LgEdg(edge) .* sum(weighted_phi_times_data)';
+
   % Gradients des fonctions de base au bord (évalués sur les pts de quadrature)
   grad_phi_dot_n = zeros(size(grad_phi,1), np);  % [ndof x nbr quadra]
   for i = 1:size(grad_phi,1)
@@ -116,7 +125,7 @@ for edge=EdgDiri
       grad_phi_dot_n(i,k) = dot(squeeze(grad_phi(i,:,k)), EdgUnit(edge,:)); %% squeeze pour transformer [1 x 2 x 1] ---> [2 x 1]
     endfor
   endfor
-  
+
   % Terme d'intégrale \int g grad phi_i \cdot n
   grad_phi_times_data = etaKappa(edge) * grad_phi_dot_n' .* PhiDirichlet; % taille [np x ndof]
   RHS(debT:finT) -= sum(awp .* grad_phi_times_data)';
@@ -158,7 +167,7 @@ endfor
 for tri = 1:Nbtri
   IGLO=NumTri(tri,:); CoorNeuT=CoorNeu(IGLO,:);
   deb=idof(tri,1); fin=idof(tri,2); ndofT=idof(tri,3);
-  %   
+  %
   % volume of the element
   aire=Aires(tri);
   % Integration points

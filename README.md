@@ -5,7 +5,7 @@ This project implements an **a posteriori error estimator** for **Discontinuous 
 
 The work is based on the estimator proposed by Ainsworth (2007), extended to handle **heterogeneous diffusion problems**, and validated through numerical experiments.
 
-This is a research prototype.
+This is a research prototype implemented with Octave GNU.
 
 The PDF report sums up the theory used and the numerical results.
 ---
@@ -134,7 +134,7 @@ For singular problems (e.g. L-shaped domain):
     - SquareNeumann : Files for Delta u =  sin(lambda * pi .* x) .* sin(lambda * pi .* y), grad_n u =  grad_n(sin(lambda * pi .* x) .* sin(lambda * pi .* y)) on the border (lambda is an integer)
     - SquarePoisson : Files for Delta u =  sin(lambda * pi .* x) .* sin(lambda * pi .* y), grad_n u = 0 on the border (lambda is an integer)
     - SWIP_Square : Files for div( kappa grad u ) =  0, u = r^alpha( a cos(alpha theta) + b sin(alpha theta)) on the border (alpha > 0), kappa = kappa(T).
-    - TopNeumann : Files for https://ecoles-cea-edf-inria.fr/en/schools/ecole-analyse-numerique-2022/
+    - TopNeumann : Files for TP3 of https://ecoles-cea-edf-inria.fr/en/schools/ecole-analyse-numerique-2022/.
 - MatGlo : Global matrices files
 - MatGloGradient_SWIP : Global matrices files used for SWIP method
 - MatLoc : Local matrices files
@@ -154,9 +154,9 @@ The name of the geo file is : "ProblemName.geo".
 The .msh files should be named : ProblemName_h{X}.msh, where X = 1, ..., 5. X = 1 being the first non refined file, X > 1 are a sequence refined meshes.
 Note the program expects that the greater X is, the more the mesh is refined.
 
-1. Open mainPoissonDG.m.
+1. Run TrouveChemin.m to add the project folder in the path of Octave.
 
-2. Select the problem you want to run.
+2.  Open mainPoissonDG.m and select the problem you want to run.
 
 3. Choose what vizualisation you want the the "GLOBAL visu".
 
@@ -178,10 +178,14 @@ The simulations will run for X = m0 to X = m1 if m0 > m1.
 ---
 
 ## Author
+
 Raphaël Lecoq
+
 Erell Jamelot
+
 Andrew Peitavy
-Thanks to Melissa Mroueh for her help and some parts of the script.
+
+Thanks to Melissa Mroueh for her help and some parts of the script
 
 ---
 

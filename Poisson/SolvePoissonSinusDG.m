@@ -20,36 +20,36 @@
 %
 % SolvePoissonSinusDG.m:
 %
-% Convergence en maillage, EF DG P1 ou P2, base de monomes ou de Lagrange
-%   Pb de Laplace dans un carre [0,1]*[0,1] :
+% Mesh convergence, DG finite elements P1 or P2, monomial or Lagrange basis
+%   Laplace problem on a square [0,1]*[0,1] :
 %   -Delta Phi =(2*npi^2)*sin(npi*x)*sin(npi*y)
 %   Solution Phi(x,y)=sin(npi*x)*sin(npi*y)
 %
 % SYNOPSIS [Eu0,Eu1,fig]=SolvePoissonSinusDG(fig)
 %
-% GLOBAL - CoorNeu(Nbpt,2) : coordonnees (x, y) des sommets (noeuds P1)
-%        - CoorNeu2(Nbpt+Nbedg,2) : coordonnees (x, y) des noeuds P2
-%        - RefNeu(Nbpt,1) : reference des sommets
-%        - CoorBary(Nbtri,3) :coordonnees (x, y) des barycentres des triangles
-%        - CoorMil(Nbedg,2)   : Coordonnees des milieux d'aretes
-%		     - RefEdg(Nbedg,1) : Reference de chaque arete 
-%        - NumTri(Nbtri,3) : liste de triangles 
-%                   (3 numeros de sommets) 
-%        - NumTri2(4*Nbtri,3) : liste de triangles du maillage P2
-%                   (3 numeros de sommets)
-%		     - TriEdg(Nbtri,3) : Pour chaque triangle, TriEdg(l,i) est le numero de l'arete opposee au sommet NumTri(l,i)
-%                  (3 numeros des aretes - matrice entiere Nbtri x 3)
-%		     - EdgTri(Nbedg,2) : Pour chaque arete, EdgTri(a,:) donne les numeros des 2 triangles de chaque arete 
-%                                 EdgTri(a,2) = 0 si a est sur la frontiere
-%        - LgEdg2(Nbedg,1) : longueurs des aretes au carre
-%        - EdgNorm(Nbedg,2) : vecteurs face-normale, orientes tri1->tri2
-%        - Aires(Nbtri,1) : aires des triangles
-%        - fig : numero de figure si visualisation
-%        - ordre  : ordre d'approximation
-%        - mi  : numero du maillage
-% OUTPUT - Er0 : Erreur L2 normalisee \|\phi_h-\Pi_h(\phi)\|_0 /\|\Pi_h(\phi)\|_h
-%        - Er1 : Erreur H1 normalisee   |\phi_h-\Pi_h(\phi))|_1/\|\Pi_h(\phi)\|_h
-%        - fig = numero de la derniere figure
+% GLOBAL - CoorNeu(Nbpt,2) : coordinates (x, y) of vertices (P1 nodes)
+%        - CoorNeu2(Nbpt+Nbedg,2) : coordinates (x, y) of P2 nodes
+%        - RefNeu(Nbpt,1) : reference of vertices
+%        - CoorBary(Nbtri,3) : coordinates (x, y) of triangle barycenters
+%        - CoorMil(Nbedg,2)   : coordinates of edge midpoints
+%        - RefEdg(Nbedg,1) : reference of each edge
+%        - NumTri(Nbtri,3) : list of triangles
+%                   (3 vertex indices)
+%        - NumTri2(4*Nbtri,3) : list of triangles of the P2 mesh
+%                   (3 vertex indices)
+%        - TriEdg(Nbtri,3) : for each triangle, TriEdg(l,i) is the index of the edge opposite to vertex NumTri(l,i)
+%                  (3 edge indices - integer matrix Nbtri x 3)
+%        - EdgTri(Nbedg,2) : for each edge, EdgTri(a,:) gives the indices of the 2 adjacent triangles
+%                                 EdgTri(a,2) = 0 if a is on the boundary
+%        - LgEdg2(Nbedg,1) : squared edge lengths
+%        - EdgNorm(Nbedg,2) : face-normal vectors, oriented tri1->tri2
+%        - Aires(Nbtri,1) : triangle areas
+%        - fig : figure number for visualization
+%        - ordre  : approximation order
+%        - mi  : mesh index
+% OUTPUT - Er0 : normalized L2 error |\phi_h-\Pi_h(\phi)|_0 /|\Pi_h(\phi)|_h
+%        - Er1 : normalized H1 error   |\phi_h-\Pi_h(\phi))|_1/|\Pi_h(\phi)|_h
+%        - fig = index of the last figure
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -58,7 +58,7 @@ function [Er0,Er1,fig]=SolvePoissonSinusDG(fig);
 global CoorNeu CoorNeu2 RefNeu
 global Nbtri CoorBary Aires NumTri NumTri2 TriEdg invDiaTri sigTri etaTri
 global Nbedg CoorMil RefEdg LgEdg2 EdgNorm EdgTri NumEdg
-global ordre mi 
+global ordre mi
 global etaEdg
 %
 OrdTri=ordre*ones(Nbtri,1);
@@ -89,7 +89,7 @@ sU=zeros(ndof_tot,1);
 ideb=1;
 for tt=1:Nbtri
   t=renumT(tt);
-  i1=idof(t,1); ndoft=idof(t,3); 
+  i1=idof(t,1); ndoft=idof(t,3);
   for p=0:ndoft-1
     sU(ideb+p,1)=i1+p;
   end
@@ -108,7 +108,7 @@ invMu=sparse(ndof_tot,ndof_tot);
 for t=1:Nbtri
   debT=idof(t,1); finT=idof(t,2);
   % inversion locale (parallelisable)
-  invMu(debT:finT,debT:finT)=inv(Mu(debT:finT,debT:finT));      
+  invMu(debT:finT,debT:finT)=inv(Mu(debT:finT,debT:finT));
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Second membre  et solution exacte
@@ -173,9 +173,9 @@ fprintf('Temps de resolution (Ku*Phi=RHS) = %7.2e s\n',elapsed_time);
 dPhi=Phih-Phiexh;
 Er0=sqrt((dPhi'*Mu*dPhi)/NormGPhiex2h);
 Er1=sqrt((dPhi'*Ku*dPhi)/NormGPhiex2h);
-fprintf('P%i DG mesh_%i, ||Ph(Phiex)-Phih||_0/||Phiex||_1 = %7.2e\n',ordre,mi,Er0); 
+fprintf('P%i DG mesh_%i, ||Ph(Phiex)-Phih||_0/||Phiex||_1 = %7.2e\n',ordre,mi,Er0);
 fprintf('P%i DG mesh_%i, ||Ph(Phiex)-Phih||_h/||Phiex||_1 = %7.2e\n',ordre,mi,Er1);
-fprintf('------------------------------------------------\n'); 
+fprintf('------------------------------------------------\n');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Visualisation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -192,7 +192,7 @@ if (fig>0)
     NT=NumTri; CN=CoorNeu;
   end
   if (ordre==2)
-    NT=NumTri2; CN=CoorNeu2; 
+    NT=NumTri2; CN=CoorNeu2;
   end
   tex=sprintf('Solution exacte Phi, P%i, mesh%i', ordre,mi);
   tDG=sprintf('Solution P%i DG Phi, mesh%i',ordre,mi);

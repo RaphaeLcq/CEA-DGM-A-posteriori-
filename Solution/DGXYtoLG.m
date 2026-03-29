@@ -17,15 +17,15 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Author : Erell Jamelot CEA
-% 
-% DGXYtoLG.m: 
-%      
-% INPUT  - Phih(Ndof,1) : vecteur DG base des monomes
-%%       - ordreLG : ordre de la projection
-%        - idof(Nbtri,3)  : numero globaux
 %
-% OUTPUT - ULG(ndofLG,1) : valeurs du vecteur Phih aux sommets (ordreLG=1) 
-%                           ou aux sommets et aux aretes (ordreLG=2)
+% DGXYtoLG.m:
+%
+% INPUT  - Phih(Ndof,1) : vector DG basis of monomials X^n
+%%       - ordreLG : ordre of the projection
+%        - idof(Nbtri,3)  : global number of freedoms
+%
+% OUTPUT - ULG(ndofLG,1) : valuef of the vector Phih on the middle of edges (ordreLG=1)
+%                           or vertices and edges (ordreLG=2)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function ULG=DGXYtoLG(Phih,ordreLG,OrdTri,MLG,idof)
@@ -68,13 +68,13 @@ for t=1:Nbtri
   if (ordreLG==1)
     psiLG=lambda;
   else
-    AGLO=TriEdg(t,:); 
+    AGLO=TriEdg(t,:);
     JLOC=[2,3,1]; KLOC=[3,1,2];
     lambda2=lambda.*lambda;
     psiS=2*lambda2-lambda;
     psiM=4*lambda(:,JLOC).*lambda(:,KLOC);
-    psiLG=[psiS,psiM]; IGLO=[IGLO,AGLO+Nbpt]; 
-  end 
+    psiLG=[psiS,psiM]; IGLO=[IGLO,AGLO+Nbpt];
+  end
   PUh(IGLO)+=sum(PhihT.*psiLG,1)';
 end % end_for t=1:Nbtri
 ULG=MLG\PUh;

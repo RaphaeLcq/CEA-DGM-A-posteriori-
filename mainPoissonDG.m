@@ -20,7 +20,7 @@
 %
 % mainPoissonSinusDG.m:
 %
-%Finite Elements DG P1 or P2, basis Lagrange or X^n
+% Finite Elements DG P1 or P2, basis Lagrange or X^n
 
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -55,7 +55,7 @@ setProblem(problemName);
 % if m1 < m2, it will perform several simulations from m1 to m0.
 % ef0 == ef1 should not be
 m0=1;
-m1=2;
+m1=1;
 %
 global eps nitMAX lambda alpha
 

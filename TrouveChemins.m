@@ -18,7 +18,7 @@
 %
 % Author : CEA
 %
-% TrouveChemins : Fins all the foldesr used to run the script.
+% TrouveChemins : Finds all the foldesr used to run the script.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
