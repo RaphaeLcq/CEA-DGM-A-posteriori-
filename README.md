@@ -154,9 +154,9 @@ The name of the geo file is : "ProblemName.geo".
 The .msh files should be named : ProblemName_h{X}.msh, where X = 1, ..., 5. X = 1 being the first non refined file, X > 1 are a sequence refined meshes.
 Note the program expects that the greater X is, the more the mesh is refined.
 
-1. Open mainPoissonDG.m.
+1. Run TrouveChemin.m to add the project folder in the path of Octave.
 
-2. Select the problem you want to run.
+2.  Open mainPoissonDG.m and select the problem you want to run.
 
 3. Choose what vizualisation you want the the "GLOBAL visu".
 
@@ -178,10 +178,14 @@ The simulations will run for X = m0 to X = m1 if m0 > m1.
 ---
 
 ## Author
+
 Raphaël Lecoq
+
 Erell Jamelot
+
 Andrew Peitavy
-Thanks to Melissa Mroueh for her help and some parts of the script.
+
+Thanks to Melissa Mroueh for her help and some parts of the script
 
 ---
 
