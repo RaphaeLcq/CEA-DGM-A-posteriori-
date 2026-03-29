@@ -11,51 +11,41 @@
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
 * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
 * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
 *****************************************************************************/
 %}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% Author : CEA
+% Author : Mayssa Mroueh CEA
 %
-% TrouveChemins : Fins all the foldesr used to run the script.
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SYNOPSIS
+    % Calcule l'intégrale de (b1.(x-x1)) * (b2.(x-x2)) sur un segment en 2D.
+    %
+    % Entrées :
+    % - b1 : vecteur directionnel pour le premier terme [bx1, by1]
+    % - x1 : point associé à b1 [x1, y1]
+    % - b2 : vecteur directionnel pour le second terme [bx2, by2]
+    % - x2 : point associé à b2 [x2, y2]
+    % - P0 : point de départ du segment [x0, y0]
+    % - P1 : point d'arrivée du segment [x1, y1]
+    %
+    % Sortie :
+    % - I : valeur exacte de l'intégrale.
 
-addpath MatGlo
-addpath MatLoc
-addpath MeshUtils
-addpath Poisson
-addpath Solution
-addpath SWIP
-addpath MatGloGradient_SWIP
-
-addpath MeshFiles/Lshape
-addpath MeshFiles/LshapeNeumann
-addpath MeshFiles/LshapeNeumannRaff
-addpath MeshFiles/LshapeSansRaffinement
-addpath MeshFiles/Square_h
-addpath MeshFiles/Square_raffinageHarmonique
-addpath MeshFiles/SquareHole
-addpath MeshFiles/SquareHoleRaff
-addpath MeshFiles/SquareNeumann
-addpath MeshFiles/SquareRaff
-addpath MeshFiles/SquareSWIP
-addpath MeshFiles/SquareSWIP_Raff
-addpath MeshFiles/SquareTopNeumann
+    % Calcul de la longueur et des vecteurs directionnels
 
 
-addpath EstimPosterioriAinsworth
-addpath EstimPosterioriAinsworth/EstimationConforme
-addpath EstimPosterioriAinsworth/EstimationNonConforme
 
-addpath FonctionsProblemes
-addpath FonctionsProblemes/Lshape
-addpath FonctionsProblemes/HarmonicSquare
-addpath FonctionsProblemes/SquareNeumann
-addpath FonctionsProblemes/TopNeumann
-addpath FonctionsProblemes/SquarePoisson
-addpath FonctionsProblemes/LshapeNeumann
-addpath FonctionsProblemes/SWIP_Square
+function I = integrate_b1_b2(b1, x1, b2, x2, P0, P1)
+    L = norm(P1 - P0);
+    dP = P1 - P0;
 
-addpath DEBUG
+    % Calcul des coefficients
+    A = dot(b1, P0 - x1) * dot(b2, P0 - x2);
+    B = dot(b1, P0 - x1) * dot(b2, dP) + dot(b2, P0 - x2) * dot(b1, dP);
+    C = dot(b1, dP) * dot(b2, dP);
+
+    % Intégrale
+    I = L * (A + B / 2 + C / 3);
+end

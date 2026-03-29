@@ -45,7 +45,7 @@ function [Ksip,Mass]=MatPoissonDGsip(OrdTri,idof)
 global CoorNeu
 global Nbtri CoorBary Aires NumTri TriEdg invDiaTri
 global Nbedg NumEdg CoorMil RefEdg EdgNorm EdgTri LgEdg
-global etaEdg 
+global etaEdg kappa
 %
 Ndof=idof(Nbtri,2);
 Ksip=sparse(Ndof,Ndof);
@@ -62,11 +62,11 @@ for f=1:Nbedg
   EdgNormF=EdgNorm(f,:);
   T12=EdgTri(f,:);
   T1=T12(1); deb1=idof(T1,1); fin1=idof(T1,2); %ndof1=idof(T1,3);
-  etaF=etaEdg(f); 
+  etaF=etaEdg(f);
   etaK = etaKappa(f);
   %%[kappaAvg1, kappaAvg2] = HarmonicAverageKappa(f); On n'arrive pas encore à l'implémenter dans ce cas
-  
-  kappa1 = kappa(T1); 
+
+  kappa1 = kappa(T1);
   if (RefEdg(f)==0)
     % Face interieure
     % Kxy12(i,j)= -0.5 * kappa_2 * \int_F  \grad\psi_j\cdot\nvec_F\,\phi_i  CONSISTANCE
@@ -101,7 +101,7 @@ for f=1:Nbedg
     oT=OrdTri(T1);
     CoorBaryT=CoorBary(T1,:);
     [KsipB,Mxy]=KsipDGEdgeB(invhT,oT,CoorBaryT,CoorEdgF,CoorMilF,EdgNormF);
-    Ksip(deb1:fin1,deb1:fin1) -= kappa1*KsipB; %% KsipB renvoie -0.5*int_F (...) et pour Neumann il faut 0.5*int_F (...) 
+    Ksip(deb1:fin1,deb1:fin1) -= kappa1*KsipB; %% KsipB renvoie -0.5*int_F (...) et pour Neumann il faut 0.5*int_F (...)
   end
 end
 %

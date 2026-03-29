@@ -1,6 +1,6 @@
 %{
 /****************************************************************************
-* Copyright (c) 2022, CEA
+* Copyright (c) 2025, CEA
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -19,16 +19,16 @@
 % Author : Raphaël Lecoq CEA
 %
 %
-% SYNOPSIS - Initialise à 1 le problème considéré
+% SYNOPSIS - Initalize at 1 the chosen problem
 %
 
-% GLOBAL - Lshape SquareHarmonic Neumann NeumannTop LshapeNeumann SquareHole SquareSinus SquareSWIP  : problème considéré
+% GLOBAL - Lshape SquareHarmonic Neumann NeumannTop LshapeNeumann SquareHole SquareSinus SquareSWIP  : problem name
 
 function setProblem(problemName)
     % Déclare les globaux
     global SquareSinus Neumann SquareHarmonic Lshape LshapeNeumann NeumannTop SquareHole SquareSWIP
 
-    % Initialise tout à 0
+    % Everything is initialized to 0
     SquareSinus = 0;
     Neumann = 0;
     SquareHarmonic = 0;
@@ -57,6 +57,6 @@ function setProblem(problemName)
         case 'SquareSWIP'
             SquareSWIP = 1;
         otherwise
-            error('Nom de problème inconnu : %s', problemName);
+            error('Unknown problem : %s', problemName);
     end
 end

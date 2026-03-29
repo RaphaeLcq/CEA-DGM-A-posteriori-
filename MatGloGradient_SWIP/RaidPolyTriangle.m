@@ -11,51 +11,73 @@
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
 * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
 * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
 *****************************************************************************/
 %}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% Author : CEA
+% Author : Mayssa Mroueh CEA
+
+% Matrices de masse des monomes P1 et P2 pour un triangle donne
 %
-% TrouveChemins : Fins all the foldesr used to run the script.
+% SYNOPSIS Mass = RaidPolyTriangle(aire,invhT,oT,CoorNeuT,CoorMilT,CoorBaryT)
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Pour tester : aire=0.5; invh=1/sqrt(2); ordre=2;
+%                         CoorNeu =[0,0;1,0;0,1]; 
+%                         CoorMil =[0.5,0.5;0,0.5;0.5,0];
+%                         CoorBary=[1/3,1/3];
+%                         
+%
+% INPUT  - aire  : aire du triangle
+%        - invhT  : mise a l'echelle (inverse du diametre du triangle)
+%        - oT : ordre polynomial local
+%        - CoorNeuT(3,2) : coordonnees des sommets du triangle
+%        - CoorMilT(3,2) : coordonnees des milieux des aretes du triangle
+%        - CoorBaryT(1,2): coordonnees du barycentre du triangle
+%       
+% OUTPUT - Mass: matrice de masse locale fonctions de base monomiales
+%                [(x-xT)/hT]^nx*[(y-yT)/hT]^ny avec nx, ny<=ordre
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function K=RaidPolyTriangle(aire,invhT,oT,CoorNeuT,CoorMilT,CoorBaryT) %OK
+  %
+  %% MATRICE DE MASSE
+  %
+  X1=CoorNeuT(1,:);
+  X2=CoorNeuT(2,:);
+  X3=CoorNeuT(3,:);
+  ndof=3*oT;
+  K=zeros(ndof,ndof);
+  if oT==0
+    ndof=1;
+    K=zeros(ndof,ndof);
+    K(1,1)=0;
+  else
+    K=zeros(ndof,ndof);
+    K(3,3)=invhT^2*aire;
+    K(2,2)=invhT^2*aire;
+  end
+end
 
-addpath MatGlo
-addpath MatLoc
-addpath MeshUtils
-addpath Poisson
-addpath Solution
-addpath SWIP
-addpath MatGloGradient_SWIP
-
-addpath MeshFiles/Lshape
-addpath MeshFiles/LshapeNeumann
-addpath MeshFiles/LshapeNeumannRaff
-addpath MeshFiles/LshapeSansRaffinement
-addpath MeshFiles/Square_h
-addpath MeshFiles/Square_raffinageHarmonique
-addpath MeshFiles/SquareHole
-addpath MeshFiles/SquareHoleRaff
-addpath MeshFiles/SquareNeumann
-addpath MeshFiles/SquareRaff
-addpath MeshFiles/SquareSWIP
-addpath MeshFiles/SquareSWIP_Raff
-addpath MeshFiles/SquareTopNeumann
 
 
-addpath EstimPosterioriAinsworth
-addpath EstimPosterioriAinsworth/EstimationConforme
-addpath EstimPosterioriAinsworth/EstimationNonConforme
 
-addpath FonctionsProblemes
-addpath FonctionsProblemes/Lshape
-addpath FonctionsProblemes/HarmonicSquare
-addpath FonctionsProblemes/SquareNeumann
-addpath FonctionsProblemes/TopNeumann
-addpath FonctionsProblemes/SquarePoisson
-addpath FonctionsProblemes/LshapeNeumann
-addpath FonctionsProblemes/SWIP_Square
 
-addpath DEBUG
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

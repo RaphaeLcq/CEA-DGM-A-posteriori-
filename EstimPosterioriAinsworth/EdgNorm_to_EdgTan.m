@@ -11,51 +11,35 @@
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
 * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
 * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
 *****************************************************************************/
 %}
+%% Vecteurs tangentiels non normalisés dirigés dans le sens trigonométrique à partir des vecteurs normaux non normalisés
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Author : CEA
 %
-% TrouveChemins : Fins all the foldesr used to run the script.
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% SYNOPSIS EdgTan = EdgNorm_to_EdgTan(tri, EdgNormT) 
+%
+% GLOBALS:
+%
+% INPUT : 
+%   - tri                         : indice du triangle 
+%   - EdgNormT(3,2)              : vecteur normal non normalisé vers l'extérieur des faces du triangles
+% 
+% OUTPUT:
+%   - EdgTan(3,2)  : vecteur tangent non normalisé des faces du triangles, orienté dans le sens trigonométrique par rapport aux normales
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-addpath MatGlo
-addpath MatLoc
-addpath MeshUtils
-addpath Poisson
-addpath Solution
-addpath SWIP
-addpath MatGloGradient_SWIP
+% 
 
-addpath MeshFiles/Lshape
-addpath MeshFiles/LshapeNeumann
-addpath MeshFiles/LshapeNeumannRaff
-addpath MeshFiles/LshapeSansRaffinement
-addpath MeshFiles/Square_h
-addpath MeshFiles/Square_raffinageHarmonique
-addpath MeshFiles/SquareHole
-addpath MeshFiles/SquareHoleRaff
-addpath MeshFiles/SquareNeumann
-addpath MeshFiles/SquareRaff
-addpath MeshFiles/SquareSWIP
-addpath MeshFiles/SquareSWIP_Raff
-addpath MeshFiles/SquareTopNeumann
+function EdgTan = EdgNorm_to_EdgTan(tri, EdgNormT) 
 
+EdgTan = zeros(3,2);
+EdgTan(1,:) = [-EdgNormT(1,2),EdgNormT(1,1)];
+EdgTan(2,:) = [-EdgNormT(2,2),EdgNormT(2,1)];
+EdgTan(3,:) = -EdgTan(2,:) - EdgTan(1,:);
 
-addpath EstimPosterioriAinsworth
-addpath EstimPosterioriAinsworth/EstimationConforme
-addpath EstimPosterioriAinsworth/EstimationNonConforme
-
-addpath FonctionsProblemes
-addpath FonctionsProblemes/Lshape
-addpath FonctionsProblemes/HarmonicSquare
-addpath FonctionsProblemes/SquareNeumann
-addpath FonctionsProblemes/TopNeumann
-addpath FonctionsProblemes/SquarePoisson
-addpath FonctionsProblemes/LshapeNeumann
-addpath FonctionsProblemes/SWIP_Square
-
-addpath DEBUG
+   
+endfunction

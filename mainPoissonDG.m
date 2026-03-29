@@ -1,6 +1,6 @@
 %{
 /****************************************************************************
-* Copyright (c) 2022, CEA
+* Copyright (c) 2025, CEA
 * All rights reserved.
 *
 * Redistribution and use iabs(y(i) - 1) <n source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -16,69 +16,72 @@
 %}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% Author : Erell Jamelot CEA
+% Author : Erell Jamelot, Andrew Peitavy, Raphaël Lecoq CEA
 %
 % mainPoissonSinusDG.m:
 %
-% Convergence en maillage, EF DG P1 ou P2, base de monomes ou de Lagrange
-%   Pb de Laplace dans un carre [0,1]*[0,1] (Square) ou un Lshape [0;0.5]*[0;1] union [0.5;1]*[0.5;1]
-%   -Delta Phi = f
+%Finite Elements DG P1 or P2, basis Lagrange or X^n
+
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear all;
 close all;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%% Paramètres de visu %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-global visuEta = 0;    % Permet de différencier le cas où Eta est initialisé avec global EtaEdgMesh ou par la fonction EtaParam.m
-global DonneesP1 = 0;  % global DonnesP1 = 1 pour vérifier que \int_T f + \int_F g_T = 0 pour des données de dirichlet projetées sur P1_c.
+%%%%%%%%%%%%%%%%%%%%%%%%%%% Visualization parameters %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+global visuEta = 0;    % Only use to vizualize the effect of global EtaEdgMesh in the function EtaParam.m
+global DonneesP1 = 0;  % global DonnesP1 = 1 allows to check \int_T f + \int_F g_T = 0 for a problem with piecewise continuous Dirichlet data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-global DEBUG = 0
-global visu = 0 %% 1 cartes locales, 2 solution numérique, 3 si afficher l'erreur L2 aussi
-global raffinement = 0 %% Choisi si le maillage est raffiné ou non
-global SWIP = 1 %% Choisi si on résout avec SWIP ou SIP 
+global DEBUG = 0  %% runs all the implementation benchmark
+global visu = 2  %% 1 shows local error maps, 2 show the numerical solution, 3 allows to display the L2 error for multiple
+global raffinement = 0 %% Choose whether to use refined meshes or regular mesh
+global SWIP = 1 %% Choose whether to use the SWIP (SWIP == 1) or SIP (SWIP == 0) method
 
-% Active un problème parmi la liste suivante :
-%   'SquareSinus'    : Carré Dirichlet - Δu = nπ² sin(nπx) sin(nπy), u=0 au bord
-%   'Neumann'        : Carré Neumann - Δu=0, grad u·n = [3x²-3y² ; 6xy]·n
-%   'SquareHarmonic' : À supprimer, mal posé
+% Choose a problem among the following ones :  :
+%   'SquareSinus'    : Square Dirichlet - Δu = nπ² sin(nπx) sin(nπy), u=0 au bord
+%   'Neumann'        : Square Neumann - Δu=0, grad u·n = [3x²-3y² ; 6xy]·n
 %   'Lshape'         : L-shape Dirichlet, solution r^α sin(αθ), α=2/3
 %   'LshapeNeumann'  : L-shape Neumann, solution r^α sin(αθ), α=2/3
-%   'NeumannTop'     : Carré CL mixtes, u=0 sur bottom/left/right, grad u·n=1 sur top
-%   'SquareHole'     : Carré avec trou, Dirichlet=0 sauf top, Neumann=-1 top, 0 sur trou
-%   'SquareSWIP'     : Problème SquareSWIP
+%   'NeumannTop'     : Square with mixed boundary conditions, u=0 on bottom/left/right, grad u·n=1 on top
+%   'SquareHole'     : Square wirh a hole, Dirichlet=0 on the outter boundaries except top one, Neumann=-1 on top, 0 on inner hole
+%   'SquareSWIP'     : Heterogeneous diffusion on a square divided in 4 squares
 %
-problemName =  'SquareSWIP';
+problemName =  'SquareSinus';
 setProblem(problemName);
 
 
-% PARAMETRES MODIFIABLES: mi est le mesh step (1-5) et ef le nombre de simulations (1-2)
-m0=1; ef0=1;  
-m1=1; ef1=1;
+% PARAMETERS:
+% 1 <= mi <= 5 is the mesh number chosen among the mesh files, 1 being coarse mesh and the finest mesh (1-5)
+% if m1 < m2, it will perform several simulations from m1 to m0.
+% ef0 == ef1 should not be
+m0=1;
+m1=2;
 %
 global eps nitMAX lambda alpha
-eps=1.e-10;  %OUTPUT - KLG, K1, K2 : matrices de raideur locales pour EF de Lagrange ordre, P1 P2 precision GCP
+
+eps=1.e-10;  % P1 P2 precision GCP
 nitMAX=1000; % nb iterations max GCP
-lambda = 1;    % Longueur d'onde pour la solution sinusoïdale. Choisir un nombre entier
-alpha = 2/3;  % Coefficient alpha pour la solution SWIP
+lambda = 1;    % Choisir un nombre entier Wave lenght for the sinus problem. Choose an integer
+alpha = 2/3;  % Chosen alpha for the SWIP problem.
 %
-nmesh=m1-m0+1; nef=(ef1-ef0)+1; 
+%
+ef0=1;ef1=1;
+nmesh=m1-m0+1; nef=(ef1-ef0)+1;
 ef=[ef0;ef1];
 %
+%% [0.1,0.05,0.025,0.0125,0.00625] we recommend to use these values while creating the mesh files
 meshstep=[0.1,0.05,0.025,0.0125,0.00625];
 ndof_tab = zeros(5,1);
-TabNbpt  = zeros(1,nmesh);  %[,  568, 2212,  8558,  34239];
-TabNbtri = zeros(1,nmesh);  %[242, 1054, 4262, 16794,  68476];
-TabNbedg = zeros(1,nmesh);  %[383, 1621, 6473, 25351, 102074];
-TabDG    = zeros(nef,nmesh);%[383, 1621, 6473, 25351, 102074];
+TabNbpt  = zeros(1,nmesh);
+TabNbtri = zeros(1,nmesh);
+TabNbedg = zeros(1,nmesh);
+TabDG    = zeros(nef,nmesh);
 Er0=zeros(nef,nmesh); Er1=zeros(nef,nmesh);  ErEstim=zeros(nef,nmesh);
 Effectivity = zeros(nmesh,1); BrokenNorm=zeros(nef,nmesh);
 ErData= zeros(nef,nmesh); Estim_err_C= zeros(nef,nmesh); Estim_err_NC= zeros(nef,nmesh);
 Estim_err_C_without_curl = zeros(nef,nmesh); Estim_err_without_curl =  zeros(nef,nmesh);
 im=0;
 %
-% Image finale
-%fig=-nmesh*nef;
 fig=-nmesh*nef+1;
 %
 %
@@ -109,7 +112,7 @@ for mii=m0:m1
   [D] = paramDiffusion(alpha);
   global kappa
   kappa = kappaTri(D);
-  projP1c_Edge(); %% Projection de la donnée de Dirichlet sur P1 continue par morceaux pour l'estimation a posteriori
+  projP1c_Edge(); %% Projection of the Dirichlet data onto piecewise continuous P1 for the a posteriori estimation
   %
   ndofDG=[Nbtri,3*Nbtri,6*Nbtri];
   efi=0;
@@ -127,9 +130,9 @@ endfor
 
 
 if(m0-m1)
-%%%%%%%%%%%%%%% ENREGISTREMENT DES ERREURS  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%% SAVING THE ERRORS  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-save_dir = 'resultats_erreurs';
+save_dir = 'error_data';
 if ~exist(save_dir, 'dir')
     mkdir(save_dir);
 end
@@ -138,16 +141,11 @@ end
 savefilename = NomFichierSauvegarde(save_dir, m0, m1);
 
 
-% Création du tableau des données d'erreur
 x_data = sqrt(ndof_tab(m0:m1));
-
-% Ouverture du fichier CSV
 fid = fopen(savefilename, 'w');
-
-% Écriture de l'en-tête
 fprintf(fid, 'sqrt_ndof,BrokenGradNorm,ErEstim,Effectivity,Estim_err_C,Estim_err_NC,ErData,Estim_err_without_curl\n');
 
-% Écriture des données
+% Writing errors in csv file
 for i = 1:length(x_data)
     fprintf(fid, '%.6e,%.6e,%.6e,%.6e,%.6e,%.6e,%.6e,%.6e\n', ...
         x_data(i), ...
@@ -161,10 +159,10 @@ for i = 1:length(x_data)
 end
 
 fclose(fid);
-fprintf('Données d''erreur sauvegardées dans: %s\n', savefilename);
+fprintf('Error data saved in: %s\n', savefilename);
 
 
-%%%%%%%%%%%%%% VISU DES GRAPHES D'ERREUR
+%%%%%%%%%%%%%% VISUALIZATIION OF ERROR GRAPHS
 
   fig = 50;
   figure(fig);
@@ -174,7 +172,7 @@ fprintf('Données d''erreur sauvegardées dans: %s\n', savefilename);
   y_left2 = ErEstim(1,m0:m1);
   y_right = Effectivity(m0:m1);
 
-  % Axe gauche
+  % Left axis
   ax1 = axes();
   loglog(ax1, x, y_left1, '-+', 'LineWidth', 2,x, y_left2, '-x','LineWidth', 2);
   set(ax1, 'XScale', 'log', 'YScale', 'log');
@@ -183,28 +181,28 @@ fprintf('Données d''erreur sauvegardées dans: %s\n', savefilename);
   grid(ax1, 'on');
   hold(ax1, 'on');
 
-  % Axe droit superposé
+  % Right axis
   ax2 = axes('Position', get(ax1, 'Position'), ...
              'XAxisLocation', 'bottom', ...
              'YAxisLocation', 'right', ...
              'Color', 'none', ...
-             'XColor', 'none', ...     % <== supprime l'affichage X
+             'XColor', 'none', ...
              'YColor', 'k', ...
-             'XTick', [], ...          % <== supprime les ticks X
+             'XTick', [], ...
              'XLim', get(ax1, 'XLim'));
 
   % Tracé sur l’axe de droite
   line(x, y_right, 'Color', 'k', 'LineStyle', '-.','Parent', ax2);
 
   set(ax2, 'XScale', 'log', 'YScale', 'linear');
-  ylabel(ax2, 'Effectivité');
+  ylabel(ax2, 'Effictivity');
 
   linkaxes([ax1, ax2], 'x');
-  title(ax1, "Axe gauche: erreur log-log, Axe droite: effectivité (x-log)");
-  hleg = legend(ax1, 'Erreur grad', 'Estimation erreur', 'Location', 'northwest');
+  title(ax1, "Left axis: log-log error, Right axis: effictivity (x-log)");
+  hleg = legend(ax1, 'Grad error', 'Error estimation', 'Location', 'northwest');
   set(hleg, 'FontSize', 14);
 1
-  hleg2 = legend(ax2, 'Effectivité', 'Location', 'northeast');
+  hleg2 = legend(ax2, 'Effectivity', 'Location', 'northeast');
   set(hleg2, 'FontSize', 14);
 
 
@@ -212,31 +210,31 @@ fprintf('Données d''erreur sauvegardées dans: %s\n', savefilename);
   figure(fig);
 
   x = sqrt(ndof_tab(m0:m1));
-  y1 = ErEstim(1,m0:m1);          % Estimation d’erreur
-  y2 = Estim_err_C(1,m0:m1);      % Estimation conforme
-  y_ratio = y1 ./ y2;             % Rapport à afficher à droite
+  y1 = ErEstim(1,m0:m1);          % Error estimation
+  y2 = Estim_err_C(1,m0:m1);      % Conform error estimation
+  y_ratio = y1 ./ y2;             % Quotient to showcase on the right
 
-  % === Axe principal gauche : deux courbes en log-log ===
+  % === ===
   ax1 = axes();
   loglog(ax1, x, y1, '-', 'Color', [0.8500, 0.1250, 0.0500], 'LineWidth', 1.1, ...
                x, y2, '--o', 'MarkerFaceColor', 'red', 'Color', [0, 0.4470, 0.7410], 'LineWidth', 1.3);
 
   xlabel('sqrt(Ndof) ~ 1/h');
-  ylabel(ax1, "Estimation de l'erreur");
+  ylabel(ax1, "Error estimation");
   grid(ax1, 'on');
 
-  % Légende
-  hleg = legend(ax1, {'Estimation d’erreur', 'Estimation conforme'}, 'Location', 'northeast');
+  % Legend
+  hleg = legend(ax1, {'Error estimation', 'Estimation of conform error'}, 'Location', 'northeast');
   set(hleg, 'FontSize', 14);
-  title(ax1, "Comparaison des estimateurs d'erreur total et conforme (échelle log-log)");
+  title(ax1, "Comparison of total error estimation and conform error estimation");
 
-  % === Auto-zoom sur Y (log scale) ===
+  % === Auto-zoom on Y (log scale) ===
   ymin = min([y1(:); y2(:)]);
   ymax = max([y1(:); y2(:)]);
   zoom_margin = 0.1;
   ylim(ax1, [ymin * (1 - zoom_margin), ymax * (1 + zoom_margin)]);
 
-  % === Deuxième axe à droite pour afficher le rapport y1/y2 ===
+  % === Second axis to showcase the quotient y1/y2 ===
   ax2 = axes('Position', get(ax1, 'Position'), ...
              'XAxisLocation', 'bottom', ...
              'YAxisLocation', 'right', ...
@@ -246,45 +244,42 @@ fprintf('Données d''erreur sauvegardées dans: %s\n', savefilename);
              'XTick', [], ...
              'XLim', get(ax1, 'XLim'));
 
-  % Tracé du rapport (échelle linéaire en Y)
+
   line(x, y_ratio, 'Color', [0.2 0.6 0.2], 'LineStyle', '--', 'LineWidth', 1.5, 'Parent', ax2);
   set(ax2, 'XScale', 'log', 'YScale', 'linear');
-  ylabel(ax2, 'Rapport ErEstim / Estim\_err\_C');
+  ylabel(ax2, 'Quotient ErEstim / Estim\_err\_C');
 
-  % === Lien des axes en X ===
   linkaxes([ax1, ax2], 'x');
-
-  % Légende pour le second axe
-  hleg2 = legend(ax2, 'Rapport erreur/conforme', 'Location', 'southwest');
+  hleg2 = legend(ax2, 'Quotient error/conform', 'Location', 'southwest');
   set(hleg2, 'FontSize', 12);
 
   fig -= 1;
   figure(fig);
   loglog(sqrt(ndof_tab(m0:m1)),BrokenGradNorm(1,m0:m1),'-',sqrt(ndof_tab(m0:m1)),ErEstim(1,m0:m1),'-.',sqrt(ndof_tab(m0:m1)),Estim_err_C(1,m0:m1),'-x', ...
           sqrt(ndof_tab(m0:m1)),Estim_err_NC(1,m0:m1),'-o',sqrt(ndof_tab(m0:m1)),ErData(1,m0:m1),'-+' );
-  legend( 'Erreur grad', 'Estimation de l erreur',"Estimation conforme", "Estimation non conforme", "Oscillation données");
+  legend( 'Grad error', 'Error estimation',"Conform estimation", "Non conform estimation", "Data oscillation");
   grid on;
   xlabel('sqrt(Ndof) ~ 1/h');
-  ylabel('Erreurs');
-  title("Erreur et quantités de l'estimation en fonction du ndof, échelle log-log") ;
+  ylabel('Errors');
+  title("Error and quantities of the estimation with respect to ndofs, log-log scale") ;
 
 
 
   fig -= 1;
   figure(fig);
   loglog(sqrt(ndof_tab(m0:m1)),ErEstim(1,m0:m1),'-',sqrt(ndof_tab(m0:m1)),Estim_err_without_curl(1,m0:m1),'-.');
-  legend( 'Estimation de l erreur avec la correction du rotationnel', "Estimation de l'erreur sans la correction du rotationnel");
+  legend( 'Error estimation with curl correction', "Error correction without curl correction");
   grid on;
   xlabel('sqrt(Ndof) ~ 1/h');
-  ylabel('Erreurs');
+  ylabel('Errors');
 
   if visu == 3
     fig -= 1;
     figure(fig);
     loglog(sqrt(ndof_tab(m0:m1)),Er0(1,m0:m1));
-    legend("Erreur L2 SIP");
+    legend("L2 Error Symetric Interior Penalty");
     grid on;
     xlabel('sqrt(Ndof) ~ 1/h');
-    ylabel('Erreurs');
+    ylabel('Errors');
   endif
 endif

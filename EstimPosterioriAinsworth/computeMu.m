@@ -11,51 +11,41 @@
 * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
 * IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
 * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*
 *****************************************************************************/
 %}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Author : CEA
 %
-% TrouveChemins : Fins all the foldesr used to run the script.
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-addpath MatGlo
-addpath MatLoc
-addpath MeshUtils
-addpath Poisson
-addpath Solution
-addpath SWIP
-addpath MatGloGradient_SWIP
-
-addpath MeshFiles/Lshape
-addpath MeshFiles/LshapeNeumann
-addpath MeshFiles/LshapeNeumannRaff
-addpath MeshFiles/LshapeSansRaffinement
-addpath MeshFiles/Square_h
-addpath MeshFiles/Square_raffinageHarmonique
-addpath MeshFiles/SquareHole
-addpath MeshFiles/SquareHoleRaff
-addpath MeshFiles/SquareNeumann
-addpath MeshFiles/SquareRaff
-addpath MeshFiles/SquareSWIP
-addpath MeshFiles/SquareSWIP_Raff
-addpath MeshFiles/SquareTopNeumann
+% SYNOPSIS mu = computeMu()
+%
+% GLOBALS:
+%   - TriEdg(Nbtri,3)    : indices globaux des faces du triangle
+%   - EdgTri(Nbedg,2)    : indices globaux des triangles qui partagent une face
+%   - Nbedg              : nombre de faces
+%   - Nbtri              : nombre de triangles
+% INPUT : 
+%% OUTPUT:
+%   - mu                 : mu(tri,i) indique si la normale de face i du triangle est dirigée vers l'extérieur du triangle (== 1) ou l'intérieur (== -1)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-addpath EstimPosterioriAinsworth
-addpath EstimPosterioriAinsworth/EstimationConforme
-addpath EstimPosterioriAinsworth/EstimationNonConforme
+function mu = computeMu()
+  
+global RefEdg TriEdg EdgTri
+global Nbedg Nbtri
 
-addpath FonctionsProblemes
-addpath FonctionsProblemes/Lshape
-addpath FonctionsProblemes/HarmonicSquare
-addpath FonctionsProblemes/SquareNeumann
-addpath FonctionsProblemes/TopNeumann
-addpath FonctionsProblemes/SquarePoisson
-addpath FonctionsProblemes/LshapeNeumann
-addpath FonctionsProblemes/SWIP_Square
+mu = ones(Nbtri,3);
 
-addpath DEBUG
+Ind = find(RefEdg == 0); %%On a mu = 1 sur le bord
+for edge = Ind'
+  
+  tri = EdgTri(edge, 2); %% EdgTri(edge,2) est le + petit index global de EdgTri(edge,:) et les normales sont dirigées du triangle avec le + grand index vers le + petit dans EdgNorm
+  loc = find(TriEdg(tri, :) == edge); %% "loc" indice local associé à la numérotation globale de la face "edge" dans le triangle "tri" considéré
+  mu(tri,loc) = -1; 
+endfor
+
+  
+endfunction

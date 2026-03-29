@@ -1,6 +1,6 @@
 %{
 /****************************************************************************
-* Copyright (c) 2022, CEA
+* Copyright (c) 2025, CEA
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -22,49 +22,52 @@
 % SYNOPSIS
 %
 
-% GLOBAL - Nbtri  : nombre de triangle
-%        - Nbpt : nombre de sommets
-%        - Nbedg : nombre d'aretes
+% GLOBAL - Nbtri  : global number of triangles
+%        - Nbpt : global number of vertices
+%        - Nbedg :  global number of edges
 
-%        - CoorNeu(Nbpt,2) : coordonnees (x, y) des sommets (noeuds P1)
-%        - CoorNeu2(Nbpt+Nbedg,2) : coordonnees (x, y) des noeuds P2
-%        - CoorBary(Nbtri,2)   : Coordonnees des barycentres de triangles
-%        - CoorMil(Nbedg,2)   : Coordonnees des milieux d'aretes
+%        - CoorNeu(Nbpt,2) : coordinates (x, y) of vertices (nodes P1)
+%        - CoorNeu2(Nbpt+Nbedg,2) : coordinates (x, y) of nodes P2
+%        - CoorBary(Nbtri,2)   : coordinates of barycentres of triangles
+%        - CoorMil(Nbedg,2)   : coordinates of the edges center
 
-%        - LgEdg(Nbedg,1) : longueurs des aretes
-%        - LgEdg2(Nbedg,1) : longueurs des aretes au carre
-%        - invLgEdg(Nbedg,1)  : inverse de la longueur de la face
-%        - DiaTri(Nbtri,1)     : diamètre du triangle
-%        - invDiaTri(Nbtri,2)   : inverse des diametres des triangles
-%        - Aires(Nbtri,1) : aires des triangles
-%        - EdgNorm(Nbedg,2) : vecteurs face-normale, orientes tri1->tri2
-%        - EdgUnit(Nbedg,2) : vecteurs face-normale unitaires, orientes tri1->tri2
+%        - LgEdg(Nbedg,1) : length of edges
+%        - LgEdg2(Nbedg,1) : length of edges squared
+%        - invLgEdg(Nbedg,1)  : inverse of the edge length
+%        - DiaTri(Nbtri,1)     : diameter of triangles
+%        - invDiaTri(Nbtri,2)   : inverse of diametres of triangles
+%        - Aires(Nbtri,1) : area of triangles
+%        - EdgNorm(Nbedg,2) : vector normal-edge, oriented tri1->tri2
+%        - EdgUnit(Nbedg,2) : unitary vector normal-edge, oriented tri1->tri2
 
 
-%        - NumTri(Nbtri,3) : liste de triangles  (3 numeros de sommets) 
-%        - NumTri2(4*Nbtri,3) : liste de triangles du maillage P2 (3 numeros de sommets)
-%        - NumEdg(NbEdg,2) : Numero des 2 noeuds de chaque arete
-%        - NumEdgB(NbEdgB,2) : Numero des 2 noeuds de chaque arete
-%		     - TriEdg(Nbtri,3) : Pour chaque triangle, TriEdg(l,i) est le numero de l'arete opposee au sommet NumTri(l,i)
-%                  (3 numeros des aretes - matrice entiere Nbtri x 3)
-%		     - EdgTri(Nbedg,2) : Pour chaque arete, EdgTri(a,:) donne les numeros des 2 triangles de chaque arete 
-%                                 EdgTri(a,2) = 0 si a est sur la frontiere
-%		     - SomOpp(NbEdg,2) : Numero du sommet oppose a l'arete dans chaque triangle
-%                                  SomOpp(a,2) = 0 si a est sur la frontiere 
+%        - NumTri(Nbtri,3) : list of triangles  (3 vertices number)
+%        - NumTri2(4*Nbtri,3) : list of triangles of the mesh P2 (3 number of vertices)
+%        - NumEdg(NbEdg,2) : number of 2 nodes of each vertice
+%        - NumEdgB(NbEdgB,2) : number of 2 nodes of each vertice
+%		     - TriEdg(Nbtri,3) : for each triangle, TriEdg(l,i) is the number of vertice opposite from vertice NumTri(l,i)
+%                  (3 number of edges - full matrix Nbtri x 3)
+%		     - EdgTri(Nbedg,2) : for each vertice, EdgTri(a,:) gives the number of the 2 triangles sharing vertice
+%                                 EdgTri(a,2) = 0 if a is on the domain border
+%		     - SomOpp(NbEdg,2) : number of the opposite vertice to the edge in each sharing triangle
+%                                  SomOpp(a,2) = 0 if a is on the domain border
 
-%        - RefTri(Nbtri,1) : reference des triangles du maillage 
-%        - RefTri2(Nbtri2,1) : reference des triangles du maillage raffine
-%        - RefNeu(Nbpt,1) : reference des sommets
-%		     - RefEdg(Nbedg,1) : Reference de chaque arete 
-%		     - RefEdgB(NbEdgB,1) : Reference de chaque arete
-%        - RefNeu2(Nbpt2,1) : reference des sommets suivis des milieux d'aretes
+%        - RefTri(Nbtri,1) : reference of triangles of the mesh
+%        - RefTri2(Nbtri2,1) : reference of triangles of the mesh raffine
+%        - RefNeu(Nbpt,1) : reference of vertices
+%		     - RefEdg(Nbedg,1) : reference of each vertice
+%		     - RefEdgB(NbEdgB,1) : reference of each vertice (boundaries)
+%        - RefNeu2(Nbpt2,1) : reference of vertices followed of the middle of the edges
 
-%        - kappa(Nbtri,1)   : diffusion dans le triangle 
-%        - mu(Nbtri,3)        : mu(tri,i) indique si la normale de face i du triangle est dirigée vers l'extérieur du triangle (== 1) ou l'intérieur (== -1)
-%        - sigTri(Nbtri,1)    : sigma du triangle (je sais pas ce que c'est, on l'utilise dans EtaParam.m, peut être le nombre de faces ?) 
+%        - kappa(Nbtri,1)   : diffusion in the triangle
+%        - mu(Nbtri,3)        : mu(tri,i) indicate if the normal of face i of the triangle is directed tower the outside of the triangle (== 1) or its interior (== -1)
+%        - sigTri(Nbtri,1)    : sigma of the triangle
+%        - etaEdg(NbEdg,1) : value of eta on each edge
 
-%        - ordre  : ordre d'approximation
-%        - fig : numero de figure si visualisation
-%        - mi  : numero du maillage
+%        - ordre  :  approximation order
+%        - fig : number of figure if visualisation
+%        - mi  : number of the mesh
 %        - npi : lambda * pi
+
+%        - visu : chosen visualisation by the user in mainPoissonDG
 
